@@ -364,22 +364,27 @@
             }
         });
 
-        // Configuração do PDF
+       // Configuração do PDF
         const element = document.getElementById('proposal-template');
+        
+        // Garante que o elemento apareça para a captura
         element.style.display = 'block'; 
 
         const opt = {
-            margin:       15,
+            margin:       10,
             filename:     `Proposta_FluxoSeguros_${document.getElementById('nome_cliente').value || 'Cliente'}.pdf`,
-            image:        { type: 'jpeg', quality: 1 },
-            html2canvas:  { scale: 2, logging: false },
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        html2pdf().set(opt).from(element).save().then(() => {
-            element.style.display = 'none'; 
+        // Gerar o PDF
+        html2pdf().set(opt).from(element).toPdf().get('pdf').save().then(() => {
+            element.style.display = 'none'; // Esconde de novo após gerar
+        }).catch(err => {
+            console.error("Erro ao gerar PDF:", err);
+            alert("Erro ao gerar o PDF. Verifique se todos os campos estão corretos.");
         });
-    }
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
