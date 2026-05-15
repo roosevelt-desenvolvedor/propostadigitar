@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Proposta Profissional - Fluxo Seguros</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #2980b9;
+            --bg-color: #f4f7f6;
+            --response-color: #d9534f; /* Vermelho para as respostas */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            padding: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h2, h3 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: #555;
+        }
+
+        input, select {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.3s ease;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #1c5980;
+        }
+
+        /* ESTILOS DO PDF (O QUE APARECE NO DOCUMENTO) */
+        #proposal-template {
+            display: none;
+            padding: 40px;
+            color: #000;
+        }
+
+        .pdf-header { 
+            text-align: center; 
+            margin-bottom: 40px; 
+            border-bottom: 2px solid #222;
+            padding-bottom: 20px;
+        }
+
+        .pdf-section-title {
+            background: #eee;
+            padding: 8px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-transform: uppercase;
+        }
+
+        .pdf-item { 
+            margin-bottom: 12px; 
+            font-size: 12pt; 
+            border-bottom: 1px dotted #ccc;
+            padding-bottom: 4px;
+        }
+
+        .pdf-label { 
+            font-weight: bold; 
+            color: #333; 
+        }
+
+        .pdf-value { 
+            color: var(--response-color); /* Respostas em Vermelho */
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .participant-block {
+            margin-top: 15px;
+            padding: 10px;
+            border-left: 4px solid var(--accent-color);
+            background: #f9f9f9;
+        }
+
+        .footer-fixed {
+            margin-top: 60px;
+            border-top: 2px solid #000;
+            padding-top: 15px;
+            text-align: center;
+            font-size: 11pt;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="main-form">
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h2>Gerador de Propostas Profissionais</h2>
+        <p>Preencha os campos abaixo para gerar o PDF detalhado.</p>
+    </div>
+    
+    <div class="form-section">
+        <h3>Dados do Cliente / Empresa</h3>
+        <div class="grid">
+            <div class="input-group">
+                <label>Nome do Cliente ou Razão Social</label>
+                <input type="text" id="nome_cliente" placeholder="Ex: João Silva ou Empresa LTDA">
+            </div>
+            <div class="input-group">
+                <label>CPF ou CNPJ</label>
+                <input type="text" id="documento_cliente" placeholder="000.000.000-00">
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <h3>Configurações do Plano</h3>
+        <div class="grid">
+            <div class="input-group">
+                <label>Opção de Cobertura</label>
+                <select id="opcao_plano">
+                    <option value="">Selecione...</option>
+                    <option value="SAÚDE">SAÚDE</option>
+                    <option value="ODONTOLÓGICO">ODONTOLÓGICO</option>
+                    <option value="SAÚDE + ODONTOLÓGICO">SAÚDE + ODONTOLÓGICO</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Tipo de Contratação</label>
+                <select id="tipo_plano">
+                    <option value="">Selecione...</option>
+                    <option value="INDIVIDUAL / FAMILIAR">INDIVIDUAL / FAMILIAR</option>
+                    <option value="COLETIVO POR ADESÃO">COLETIVO POR ADESÃO</option>
+                    <option value="COLETIVO EMPRESARIAL (PME/PJ)">COLETIVO EMPRESARIAL (PME/PJ)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Operadora / Seguradora</label>
+                <input type="text" id="operadora" placeholder="Ex: Amil, Bradesco, SulAmérica...">
+            </div>
+            <div class="input-group">
+                <label>Regime de Coparticipação</label>
+                <select id="coparticipacao">
+                    <option value="">Selecione...</option>
+                    <option value="COM COPARTICIPAÇÃO TOTAL">COM COPARTICIPAÇÃO TOTAL</option>
+                    <option value="COM COPARTICIPAÇÃO PARCIAL">COM COPARTICIPAÇÃO PARCIAL</option>
+                    <option value="SEM COPARTICIPAÇÃO">SEM COPARTICIPAÇÃO (FRANQUIA ZERO)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Padrão de Acomodação</label>
+                <select id="acomodacao">
+                    <option value="">Selecione...</option>
+                    <option value="ENFERMARIA (COLETIVO)">ENFERMARIA (COLETIVO)</option>
+                    <option value="APARTAMENTO (INDIVIDUAL)">APARTAMENTO (INDIVIDUAL)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Data Prevista de Vigência</label>
+                <input type="date" id="vigencia">
+            </div>
+        </div>
+    </div>
+
+    <div id="participantes-container">
+        <div class="form-section">
+            <h3>Dados do Titular</h3>
+            <div class="grid">
+                <div class="input-group">
+                    <label>Nome Completo</label>
+                    <input type="text" class="part-nome" placeholder="Nome do Titular">
+                </div>
+                <div class="input-group">
+                    <label>Data de Nascimento</label>
+                    <input type="date" class="part-nasc">
+                </div>
+                <div class="input-group">
+                    <label>Possui Plano Anterior?</label>
+                    <select class="part-plano">
+                        <option value="">Selecione...</option>
+                        <option value="SIM">SIM</option>
+                        <option value="NÃO">NÃO</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>E-mail de Contato</label>
+                    <input type="email" class="part-email" placeholder="email@exemplo.com">
+                </div>
+                <div class="input-group">
+                    <label>Telefone / WhatsApp</label>
+                    <input type="tel" class="part-tel" placeholder="(21) 99999-9999">
+                </div>
+            </div>
+        </div>
+
+        <div id="dependentes-area"></div>
+    </div>
+
+    <button onclick="generatePDF()">GERAR PROPOSTA EM PDF</button>
+</div>
+
+<div id="proposal-template">
+    <div class="pdf-header">
+        <h1>PROPOSTA COMERCIAL DE BENEFÍCIOS</h1>
+        <p>Este documento apresenta as condições negociadas para o plano de assistência.</p>
+    </div>
+
+    <div id="pdf-content">
+        </div>
+    
+    <div class="footer-fixed">
+        <p><strong>Consultor Responsável:</strong> Roosevelt Alessandro Araujo</p>
+        <p>Fluxo Seguros - Consultoria Especializada em Planos de Saúde e Seguros</p>
+        <p>Documento emitido em: <span id="pdf-footer-date"></span></p>
+    </div>
+</div>
+
+<script>
+    // Gerar campos de dependentes (1 a 3 para brevidade, pode aumentar se quiser)
+    const depArea = document.getElementById('dependentes-area');
+    for(let i=1; i<=3; i++) {
+        depArea.innerHTML += `
+            <div class="form-section">
+                <h3>Dependente ${i} (Opcional)</h3>
+                <div class="grid">
+                    <div class="input-group">
+                        <label>Nome Completo</label>
+                        <input type="text" class="part-nome" placeholder="Nome do Dependente">
+                    </div>
+                    <div class="input-group">
+                        <label>Nascimento</label>
+                        <input type="date" class="part-nasc">
+                    </div>
+                    <div class="input-group">
+                        <label>Parentesco</label>
+                        <input type="text" class="part-parentesco" placeholder="Ex: Filho, Cônjuge...">
+                    </div>
+                    <div class="input-group">
+                        <label>Plano Anterior?</label>
+                        <select class="part-plano">
+                            <option value="">Selecione...</option>
+                            <option value="SIM">SIM</option>
+                            <option value="NÃO">NÃO</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function generatePDF() {
+        const content = document.getElementById('pdf-content');
+        content.innerHTML = ''; // Limpa geração anterior
+        
+        const hoje = new Date().toLocaleDateString('pt-BR');
+        document.getElementById('pdf-footer-date').innerText = hoje;
+
+        // Função para formatar Pergunta + Resposta em Vermelho
+        const addField = (label, value) => {
+            if (value && value.trim() !== "" && value !== "Selecione...") {
+                content.innerHTML += `
+                    <div class="pdf-item">
+                        <span class="pdf-label">${label}:</span> 
+                        <span class="pdf-value">${value.toUpperCase()}</span>
+                    </div>`;
+            }
+        };
+
+        // 1. Cabeçalho de Dados Gerais
+        content.innerHTML += `<div class="pdf-section-title">Informações do Contrato</div>`;
+        addField("Nome do Cliente/Empresa", document.getElementById('nome_cliente').value);
+        addField("Documento (CPF/CNPJ)", document.getElementById('documento_cliente').value);
+        addField("Opção de Plano", document.getElementById('opcao_plano').value);
+        addField("Tipo de Contratação", document.getElementById('tipo_plano').value);
+        addField("Operadora Selecionada", document.getElementById('operadora').value);
+        addField("Modelo de Coparticipação", document.getElementById('coparticipacao').value);
+        addField("Tipo de Acomodação", document.getElementById('acomodacao').value);
+        
+        const vig = document.getElementById('vigencia').value;
+        if(vig) addField("Data de Vigência", vig.split('-').reverse().join('/'));
+
+        // 2. Participantes
+        content.innerHTML += `<div class="pdf-section-title">Composição do Grupo / Beneficiários</div>`;
+        const sections = document.querySelectorAll('.form-section');
+        
+        sections.forEach((section) => {
+            const nome = section.querySelector('.part-nome')?.value;
+            if(nome) {
+                const tituloH3 = section.querySelector('h3').innerText;
+                content.innerHTML += `<div class="participant-block">
+                    <strong>${tituloH3}</strong><br>`;
+                
+                addField("Nome Completo", nome);
+                
+                const nasc = section.querySelector('.part-nasc').value;
+                if(nasc) addField("Data de Nascimento", nasc.split('-').reverse().join('/'));
+                
+                addField("Plano Anterior", section.querySelector('.part-plano').value);
+                
+                const parentesco = section.querySelector('.part-parentesco')?.value;
+                if(parentesco) addField("Grau de Parentesco", parentesco);
+
+                const email = section.querySelector('.part-email')?.value;
+                if(email) addField("E-mail", email);
+
+                const tel = section.querySelector('.part-tel')?.value;
+                if(tel) addField("Telefone", tel);
+                
+                content.innerHTML += `</div>`;
+            }
+        });
+
+        // Configuração do PDF
+        const element = document.getElementById('proposal-template');
+        element.style.display = 'block'; 
+
+        const opt = {
+            margin:       15,
+            filename:     `Proposta_FluxoSeguros_${document.getElementById('nome_cliente').value || 'Cliente'}.pdf`,
+            image:        { type: 'jpeg', quality: 1 },
+            html2canvas:  { scale: 2, logging: false },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            element.style.display = 'none'; 
+        });
+    }
+</script>
+
+</body>
+</html>
